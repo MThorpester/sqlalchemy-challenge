@@ -39,6 +39,7 @@ def welcome():
         f"Available Routes:<br/>"
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
+        f"/api/v1.0/tobs<br/>"
     )
 
 
@@ -89,6 +90,32 @@ def stations():
     list_of_stations = list(np.ravel(active_stations)) 
     return jsonify(list_of_stations)
 
+@app.route("/api/v1.0/tobs")
+def tobs():
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+    # Query the last 12 months of temperature observation data for the most active station
+    start_date = '2016-08-23'
+    sel = [measurement.date, 
+        measurement.tobs]
+    station_temps = session.query(*sel).\
+            filter(measurement.date >= start_date, measurement.station == 'USC00519281').\
+            group_by(measurement.date).\
+            order_by(measurement.date).all()
+
+    session.close()
+
+# Return a dictionary with the date as key and the daily precipitation total as value
+    observation_dates = []
+    temperature_observations = []
+
+    for date, observation in station_temps:
+        observation_dates.append(date)
+        temperature_observations.append(observation)
+    
+    most_active_tobs_dict = dict(zip(observation_dates, temperature_observations))
+
+    return jsonify(most_active_tobs_dict)
 
 if __name__ == '__main__':
     app.run(debug=True)
