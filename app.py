@@ -7,7 +7,6 @@ from sqlalchemy import create_engine, func, distinct
 
 from flask import Flask, jsonify
 
-
 #################################################
 # Database Setup
 #################################################
@@ -26,7 +25,6 @@ station = Base.classes.station
 # Flask Setup
 #################################################
 app = Flask(__name__)
-
 
 #################################################
 # Flask Routes
@@ -50,7 +48,7 @@ def precipitation():
     session = Session(engine)
 
     """Return a list of all daily precipitation totals for the last year"""
-    # Query and summarize daily precipitation across all stations for the last year
+    # Query and summarize daily precipitation across all stations for the last year of available data
     
     start_date = '2016-08-23'
     sel = [measurement.date, 
@@ -146,7 +144,7 @@ def trip1(start_date, end_date='2017-08-23'):
 @app.route("/api/v1.0/trip/<start_date>/<end_date>")
 def trip2(start_date, end_date='2017-08-23'):
     # Calculate minimum, average and maximum temperatures for the range of dates starting with start date.
-    # If no end date is provided, the function defaults to 2017-08-23.
+    # If no valid end date is provided, the function defaults to 2017-08-23.
 
     session = Session(engine)
     query_result = session.query(func.min(measurement.tobs), func.avg(measurement.tobs), func.max(measurement.tobs)).\
